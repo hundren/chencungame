@@ -1,0 +1,285 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Make it big</title>
+<style>
+
+*{
+font-family:Arial;
+}
+	body {
+				background: white;
+			}
+
+#canvas,div{
+                cursor: crosshair;
+				left: 0;
+				position: relative;
+				top: 0;
+}
+.label{
+	margin-left: 50px;
+}
+#timer{
+	position: absolute;
+	top: 70px;
+	left: 650px;
+}
+h2{
+	margin-left: 50px;
+	color: red;
+}
+</style>
+<script type="text/javascript">
+var ctx;
+
+// our ball object holder
+var balls = new Array();
+
+// mouse position cache
+var mouse = {x:-100, y:-100};
+
+var lifehigh=350;    //y.100 + rect.250 =350
+var r=10;            //the r of the main circle
+var r2=r;            //record the cup of the ball 
+var inmotion;  //judge the mouse if in the  centre ball
+var inmotion2; //judge the mouse if in the enemy ball
+var count=0;         //use to count the onclick
+var die=0;           //write down which ball will die
+var tries = 0;
+var score = new Array("AA Cup","A Cup","B Cup","C Cup","D Cup","E Cup","F Cup","G Cup","H Cup","I Cup","J Cup","我也不知道还有没有这种杯的了","看来某君的毅力不错","该不会还能再大吧","哇，你太大了，我受不了","不要啊，放个这个球吧","你不是人","你已经超神了","说实话，我想不到会有人这么无聊玩这么久","但是我我觉得再大点的话可能会爆的哦","其实我不知道你玩的时候有没有看这些字，但当你看到 这里的时候，我会告诉你我是在故意分你神的吗哈哈","呕血数组都不够长了 ","再来一发吧，有惊喜","游戏的版本号是ver.1.26034,作者：Biscuits_39","记住你这份毅力吧，我相信没什么事能难道你的了，如果能按F5再成功挑战一次的话","开玩笑的你继续挑战，把结果给我的邮箱吧","邮箱1368306348@qq.com","哈哈如果你刚才忘记记下我的邮箱的话，可能又要重新打过了","除非是某君看源代码的，谢绝骚扰","来吧，挤爆框吧","之后是测试代码","d","dd","dd","再然后就没然后了，你自己undifind去吧");
+var scorecount=0;
+var max_scorecount=0;
+var tt=21;
+
+function $(id) {
+	return document.getElementById(id);
+}
+
+function updateStat() {
+
+	$('tries').innerHTML = tries;
+	$('score').innerHTML = score[scorecount];
+	$('max_score').innerHTML = score[max_scorecount];
+}
+    
+function distsq(x1,y1,x2,y2){
+        return (x1-x2)*(x1-x2)+(y1-y2)*(y1-y2);
+    }
+
+function Ball(x, y, xsee, ysee) {
+
+	this.x = x;
+	this.y = y;
+	this.xsee = xsee;
+	this.ysee = ysee;
+
+	this.move = function() {
+
+		if(this.x > 665) {
+			this.x = 665;
+			this.xsee = -this.xsee;
+		} else if(this.x < 61) {
+			this.x = 61;
+			this.xsee = -this.xsee;
+		}
+
+		if(this.y > 482) {
+			this.y = 482;
+			this.ysee = -this.ysee;
+		} else if(this.y < 62) {
+			this.y = 62;
+			this.ysee = -this.ysee;
+		}
+
+	
+		this.x+= this.xsee;
+		this.y+= this.ysee;
+
+		ctx.beginPath();
+		ctx.arc(this.x, this.y, 12, 0, 2*Math.PI, true);
+		ctx.closePath();
+		ctx.fill();
+	}
+}
+function createBall() {
+	var k; //the enemy and the centre ball make the line's k
+	var vetrilx;
+	if(count==4){
+	    if(Math.random()*2>1){
+		x =  62;
+	    }
+	    else{
+		x=670;
+	    }
+		y =  Math.random()*445-62;
+		k=Math.atan2(y-270,x-400);
+		vetrilx=Math.random() * 3.45 - 2.65;
+		balls.push(new Ball(x, y, vetrilx, vetrilx*Math.tan(k)));
+		count=0;
+
+	} 	
+}
+
+//draw the draw frame work
+function clockball(){
+	//clear the canvas
+	ctx.clearRect(50,50,670,450);
+	//draw the framework
+    ctx.lineWidth=5;
+    ctx.strokeStyle= "black";
+    ctx.beginPath();
+    ctx.arc(400,270,r,0,2*Math.PI,true);
+    ctx.moveTo(47,50);
+    ctx.lineTo(750,50);
+    ctx.lineTo(750,100);
+    ctx.moveTo(50,50);
+    ctx.lineTo(50,500);
+    ctx.lineTo(750,500);
+    ctx.lineTo(750,350);
+    ctx.stroke();
+    
+    //draw the ohter ball
+    ctx.fillStyle = "#333";
+	for(var i = 0; i < balls.length; i++) {
+		balls[i].move();
+		if(
+		  (400-balls[i].x)*(400-balls[i].x) + (270-balls[i].y)*(270-balls[i].y)<= ((r+12)*(r+12))
+          ){
+	 		reset();
+    	}
+	}
+}
+//回复初始
+function reset(){
+	 balls = new Array();
+	tries+=1;
+	if(max_scorecount < scorecount) {
+				max_scorecount = scorecount;
+			}
+			scorecount=0;
+	updateStat();
+	lifehigh=350;
+	r=10;
+	tt=21;
+	   }
+function clocklife(){
+	//clear the life canvas
+	ctx.clearRect(720,100,54,250);
+	//draw the life
+	ctx.lineWidth=4;
+	ctx.strokeStyle="black";
+	ctx.strokeRect(725,100,50,250);
+	//the inside
+    if(lifehigh<350){
+    	lifehigh+=3;
+    }
+    if(lifehigh>=350){
+    	lifehigh=350;
+    }
+    if(r>r2){
+    		r-=0.252;
+    	}
+    //judge the success
+    if(lifehigh<100.5){
+    	
+        scorecount+=1;
+    	updateStat();
+    	
+    	//reset the lifehigh
+    	lifehigh=350;
+    	r2=r+3;
+    	
+    	tt=21
+    }
+    
+    ctx.fillStyle="black";
+	ctx.fillRect(725,lifehigh,50,350-lifehigh);
+
+}
+
+function blowit() {
+	   if(inmotion){
+		   lifehigh-=7;
+		   r+=0.3;
+		   createBall();
+	       count+=1;
+       document.getElementById("canvas").style.cursor="wait";
+    	}
+    else{
+    	document.getElementById("canvas").style.cursor="crosshair";
+    }
+    
+}
+
+
+function moveit(ev) {
+	 var mx;
+     var my;
+        if(ev.layerX||ev.layerX==0){
+            mx=ev.layerX;
+            my=ev.layerY;
+        }
+        else if(ev.offsetX||ev.offsetX==0){
+            mx=ev.offsetX;
+            my=ev.offsetY;
+        }
+
+	/////////////
+    //judge the mouse is in the centre ball
+	if(((mx-405)*(mx-405)+(my-275)*(my-275))<(r*r)){
+      inmotion=true;
+	}
+	else
+	{
+		inmotion=false;
+	}
+	//judege the mouse is in the enemy ball
+	for(var i = 0; i < balls.length; i++) {
+		if(
+		  (mx-balls[i].x)*(mx-balls[i].x) + (my-balls[i].y)*(my-balls[i].y)<= 200
+          ){
+          balls.splice(i,1);
+	   }
+    }
+
+}
+
+function timer(){
+	var t=document.getElementById("timer");
+if(tt==0){
+		tt=21;
+		reset();
+	}
+	tt--;
+	t.innerHTML="剩余时间:"+tt; 
+}
+
+function init(){
+    ctx=document.getElementById("canvas").getContext("2d");
+
+    window.setInterval(clockball,20);
+    window.setInterval(clocklife,200);
+    window.setInterval(blowit,60);
+  	window.setInterval(timer,1000);
+	canvas1=document.getElementById('canvas');
+    canvas1.addEventListener('mousemove',moveit,false);
+
+}
+
+</script>
+</head>
+<body onLoad="init();">
+    <canvas id="canvas" width="850" height="510">
+    </canvas>
+    <h2>看你能把那个球搞多大</h2>
+    <div class="label">规则：鼠标碰一下中间的球它就会变大一下，鼠标滑过黑球消灭，给它碰中就会打回原形的了</div>
+   <br/>
+    <div class="label">现在的级数: <span id="score">AA&nbspCup</span></div>
+
+	<div class="label">历史最大的级数: <span id="max_score">AA&nbspCup</span></div>
+
+	<div class="label">出手次数: <span id="tries">0</span>次</div>
+	<div id="timer">剩余时间:<div>
+    </body>
+    </html>
